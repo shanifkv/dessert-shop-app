@@ -5,9 +5,11 @@ import { getPlaceholderImage } from "../utils/images";
 
 type Props = {
   item: Item;
-  onAdd?: (id: string) => void; // optional local handler
+  shopId?: string;
+  onAdd?: (id: string) => void;
 };
-export default function ItemCard({ item, onAdd }: Props) {
+
+export default function ItemCard({ item, shopId, onAdd }: Props) {
   const { addItem, openCart } = useCart();
   const [adding, setAdding] = useState(false);
 
@@ -16,27 +18,38 @@ export default function ItemCard({ item, onAdd }: Props) {
     setAdding(true);
     if (onAdd) {
       onAdd(item.id);
-      // brief disable to avoid rapid clicks
       setTimeout(() => setAdding(false), 600);
     } else {
-      // add minimal item info to cart (CartItem expects itemId,name,price,qty)
-      addItem({ itemId: item.id, name: item.name, price: item.price });
-      // open cart drawer so user sees the added item
+      addItem({ itemId: item.id, name: item.name, price: item.price, shopId });
       openCart();
-      // brief disable to avoid rapid clicks
       setTimeout(() => setAdding(false), 600);
     }
   };
   return (
-    <div className="item-card" style={{border:"1px solid #eee", padding:16, borderRadius:8, width:200}}>
+    <div className="card" style={{ padding: 16, width: 200, display: "flex", flexDirection: "column" }}>
       {item.imageUrl ? (
-        <img src={item.imageUrl} alt={item.name} style={{width:"100%", height:120, objectFit:"cover", marginBottom:8}}/>
+        <img
+          src={item.imageUrl}
+          alt={item.name}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = getPlaceholderImage(item.name, 400, 240);
+          }}
+          style={{ width: "100%", height: 120, objectFit: "cover", marginBottom: 12, borderRadius: "8px" }}
+        />
       ) : (
-        <img src={getPlaceholderImage(item.name, 400, 240)} alt={item.name} style={{width:"100%", height:120, objectFit:"cover", marginBottom:8}}/>
+        <img src={getPlaceholderImage(item.name, 400, 240)} alt={item.name} style={{ width: "100%", height: 120, objectFit: "cover", marginBottom: 12, borderRadius: "8px" }} />
       )}
-      <h3 style={{margin:"8px 0"}}>{item.name}</h3>
-      <div>₹{item.price}</div>
-      <button onClick={handleAdd} style={{marginTop:8}} disabled={adding}>{adding ? "Adding…" : "Add"}</button>
+      <h3 style={{ margin: "0 0 4px", fontSize: "1.1rem" }}>{item.name}</h3>
+      <div style={{ color: "var(--color-primary)", fontWeight: 700, marginBottom: "8px" }}>₹{item.price}</div>
+      <button
+        className="btn-primary"
+        style={{ marginTop: "auto", padding: "8px 16px", fontSize: "0.9rem", width: "100%" }}
+        onClick={handleAdd}
+        disabled={adding}
+      >
+        {adding ? "Adding…" : "Add"}
+      </button>
     </div>
   );
 }

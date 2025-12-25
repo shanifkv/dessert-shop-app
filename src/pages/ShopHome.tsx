@@ -91,41 +91,68 @@ const ShopHome: React.FC = () => {
               borderRadius: 6,
               padding: 12,
               marginBottom: 8,
+              background: "#fff"
             }}
           >
-            <div>
-              <strong>Order:</strong> {o.id}
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <strong>Order #{o.id.slice(0, 8)}</strong>
+              <span style={{
+                padding: "2px 8px",
+                borderRadius: 4,
+                background: o.status === "ready" ? "#C6F6D5" : "#EBF8FF",
+                color: "#2D3748",
+                fontWeight: "bold",
+                fontSize: "0.85rem",
+                textTransform: "capitalize"
+              }}>
+                {o.status.replace(/_/g, " ")}
+              </span>
             </div>
-            <div>
-              <strong>Status:</strong> {o.status}
-            </div>
-            <div>
+
+            <div style={{ marginBottom: 12 }}>
               <strong>Total:</strong> ₹{o.total}
             </div>
 
             <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-              <button
-                disabled={updatingId === o.id}
-                onClick={() => updateOrderStatus(o.id, "preparing")}
-              >
-                Preparing
-              </button>
+              {o.status === "placed" && (
+                <button
+                  className="btn-primary"
+                  disabled={updatingId === o.id}
+                  onClick={() => updateOrderStatus(o.id, "preparing")}
+                  style={{ fontSize: "0.9rem", padding: "8px 16px" }}
+                >
+                  Start Preparing
+                </button>
+              )}
 
-              <button
-                disabled={updatingId === o.id}
-                onClick={() =>
-                  updateOrderStatus(o.id, "out_for_delivery")
-                }
-              >
-                Out for Delivery
-              </button>
+              {o.status === "preparing" && (
+                <button
+                  className="btn-primary"
+                  disabled={updatingId === o.id}
+                  onClick={() => updateOrderStatus(o.id, "ready")}
+                  style={{ fontSize: "0.9rem", padding: "8px 16px", background: "var(--color-pistachio)" }}
+                >
+                  Mark Ready
+                </button>
+              )}
 
-              <button
-                disabled={updatingId === o.id}
-                onClick={() => updateOrderStatus(o.id, "completed")}
-              >
-                Completed
-              </button>
+              {o.status === "ready" && (
+                <div style={{ color: "var(--color-gray-500)", fontStyle: "italic", fontSize: "0.9rem" }}>
+                  Waiting for driver...
+                </div>
+              )}
+
+              {o.status === "on_the_way" && (
+                <div style={{ color: "var(--color-gold)", fontWeight: 600, fontSize: "0.9rem" }}>
+                  🚀 Out for delivery
+                </div>
+              )}
+
+              {o.status === "delivered" && (
+                <div style={{ color: "var(--color-pistachio)", fontWeight: 600, fontSize: "0.9rem" }}>
+                  ✅ Delivered
+                </div>
+              )}
             </div>
           </li>
         ))}

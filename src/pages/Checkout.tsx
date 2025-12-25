@@ -35,226 +35,163 @@ export default function Checkout() {
     setLoading(true);
     try {
       const total = getTotal();
-      const address = `${line1}${line2 ? ", " + line2 : ""}, ${city}`.trim();
+      const fullAddress = {
+        name,
+        line1,
+        line2,
+        city,
+        phone
+      };
 
+      // SINGLE SOURCE OF TRUTH ORDER DOCUMENT
       const order = {
-        customerId: null,
-        shopId: items[0]?.shopId ?? null,
-        items: items.map((it) => ({ itemId: it.itemId, name: it.name, price: it.price, qty: it.qty })),
+        customerId: null, // TODO: Auth user ID
+        shopId: items[0]?.shopId ?? "demo-shop", // Fallback for debugging
+        deliveryId: null,
+        items: items.map((it) => ({
+          itemId: it.itemId,
+          name: it.name,
+          price: it.price,
+          qty: it.qty
+        })),
         total,
         status: "placed",
-        address: `${name} — ${address} — ${phone}`,
+        address: `${name}, ${line1}, ${line2 ? line2 + ', ' : ''}${city} - ${phone}`,
         createdAt: serverTimestamp(),
-      } as any;
+      };
 
       const ref = await addDoc(collection(db, "orders"), order);
       clearCart();
       navigate(`/order-success/${ref.id}`);
     } catch (err: any) {
       console.error(err);
-      setError("Failed to place order. Try again.");
+      setError("Failed to place order. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <main style={{ padding: 16 }}>
-      <h2>Checkout</h2>
+  if (items.length === 0) {
+    return (
+      <main className="container" style={{ padding: "40px 20px", textAlign: "center" }}>
+        <h2 style={{ fontSize: "2rem", marginBottom: "20px" }}>Your Cart is Empty</h2>
+        <p style={{ marginBottom: "30px", color: "#666" }}>Looks like you haven't added any treats yet.</p>
+        <button
+          className="btn-primary"
+          onClick={() => navigate('/customer')}
+        >
+          Browse Shops
+        </button>
+      </main>
+    );
+  }
 
-      <section style={{ marginBottom: 16 }}>
-        <h3>Items</h3>
-        {items.length === 0 ? (
-          <div>Your cart is empty.</div>
-        ) : (
-          <ul style={{ listStyle: "none", padding: 0 }}>
+  return (
+    <main className="container" style={{ padding: "40px 20px" }}>
+      <h2 style={{ fontSize: "2.5rem", marginBottom: "30px", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
+        Checkout
+      </h2>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "60px" }}>
+        {/* Left Column: Form */}
+        <div>
+          <h3 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Shipping Details</h3>
+          <form onSubmit={onPlaceOrder} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Full Name</label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
+                placeholder="Ex. Jane Doe"
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Phone Number</label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
+                placeholder="Ex. 9876543210"
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Address Line 1</label>
+              <input
+                value={line1}
+                onChange={(e) => setLine1(e.target.value)}
+                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
+                placeholder="Street address, flat number"
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Address Line 2 (Optional)</label>
+              <input
+                value={line2}
+                onChange={(e) => setLine2(e.target.value)}
+                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
+                placeholder="Landmark, etc."
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>City</label>
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
+                placeholder="Ex. Kochi"
+              />
+            </div>
+
+            {error && (
+              <div style={{
+                padding: "12px",
+                backgroundColor: "#ffebee",
+                color: "#c62828",
+                borderRadius: "4px",
+                fontSize: "0.9rem"
+              }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary"
+              style={{ padding: "16px", fontSize: "1.1rem", marginTop: "10px" }}
+            >
+              {loading ? "Processing Order..." : `Place Order (₹${getTotal().toFixed(2)})`}
+            </button>
+          </form>
+        </div>
+
+        {/* Right Column: Order Summary */}
+        <div style={{ backgroundColor: "#f9f9f9", padding: "30px", borderRadius: "8px", height: "fit-content" }}>
+          <h3 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Order Summary</h3>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {items.map((it) => (
-              <li key={it.itemId} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0" }}>
-                <div>{it.name} × {it.qty}</div>
-                <div>₹{(it.price * it.qty).toFixed(2)}</div>
+              <li key={it.itemId} style={{ display: "flex", justifyContent: "space-between", padding: "15px 0", borderBottom: "1px solid #eee" }}>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{it.name}</div>
+                  <div style={{ fontSize: "0.9rem", color: "#666" }}>Qty: {it.qty}</div>
+                </div>
+                <div style={{ fontWeight: 600 }}>₹{(it.price * it.qty).toFixed(2)}</div>
               </li>
             ))}
           </ul>
-        )}
-        <div style={{ marginTop: 8, fontWeight: 700 }}>Total: ₹{getTotal().toFixed(2)}</div>
-      </section>
 
-      <form onSubmit={onPlaceOrder} style={{ maxWidth: 640 }}>
-        <div style={{ marginBottom: 8 }}>
-          <label>
-            Name
-            <br />
-            <input value={name} onChange={(e) => setName(e.target.value)} style={{ width: "100%" }} />
-          </label>
+          <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "2px solid #ddd", display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: 700 }}>
+            <span>Total</span>
+            <span style={{ color: "var(--color-primary)" }}>₹{getTotal().toFixed(2)}</span>
+          </div>
         </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <label>
-            Address line 1
-            <br />
-            <input value={line1} onChange={(e) => setLine1(e.target.value)} style={{ width: "100%" }} />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <label>
-            Address line 2
-            <br />
-            <input value={line2} onChange={(e) => setLine2(e.target.value)} style={{ width: "100%" }} />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <label>
-            City
-            <br />
-            <input value={city} onChange={(e) => setCity(e.target.value)} style={{ width: "100%" }} />
-          </label>
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <label>
-            Phone
-            <br />
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} style={{ width: "100%" }} />
-          </label>
-        </div>
-
-        {error && <div style={{ color: "red", marginBottom: 8 }}>{error}</div>}
-
-        <div style={{ display: "flex", gap: 8 }}>
-          <button type="submit" disabled={loading}>{loading ? "Placing order…" : "Place order"}</button>
-        </div>
-      </form>
+      </div>
     </main>
   );
 }
-import React, { useState } from "react";
-import { useCart } from "../context/CartContext";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../app/firebase";
-import type { Order } from "../types";
-import { useNavigate } from "react-router-dom";
-
-export default function Checkout() {
-  const { items, total, clearCart } = useCart();
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  async function placeOrder() {
-    setError(null);
-    if (!name.trim() || !address.trim()) {
-      setError("Please enter name and address.");
-      return;
-    }
-    if (items.length === 0) {
-      setError("Cart is empty.");
-    setLoading(true);
-    try {
-      const orderData: Omit<Order, "id" | "createdAt"> = {
-        customerId: null, // if no auth yet
-        shopId: items[0] ? (items[0].id /* placeholder - ideally keep shopId with cart */ as string) : "unknown",
-        items: items.map((it) => ({ id: it.id, name: it.name, price: it.price, qty: it.qty })),
-        total,
-        status: "placed",
-        address,
-      };
-      // Write to Firestore (orders collection)
-      const ref = await addDoc(collection(db, "orders"), {
-        ...orderData,
-        createdAt: serverTimestamp(),
-      });
-      clearCart();
-      // Optionally navigate to a success page or order detail
-      navigate(`/order-success/${ref.id}`);
-    } catch (err: any) {
-      console.error(err);
-      setError("Failed to place order. Try again.");
-    } finally {
-      setLoading(false);
-  }
-  return (
-    <div>
-      <h1>Checkout</h1>
-      <h3>Items</h3>
-      <ul>
-        {items.map((it) => (
-          <li key={it.id}>{it.name} — {it.qty} × ₹{it.price}</li>
-        ))}
-      </ul>
-      <div>Total: ₹{total.toFixed(2)}</div>
-      <h3>Delivery details</h3>
-      <div>
-        <label>
-          Name (required)
-          <input value={name} onChange={(e) => setName(e.target.value)} />
-        </label>
-      </div>
-          Address (required)
-          <textarea value={address} onChange={(e) => setAddress(e.target.value)} />
-      {error && <div style={{ color: "red" }}>{error}</div>}
-      <div style={{ marginTop: 12 }}>
-        <button onClick={placeOrder} disabled={loading}>
-          {loading ? "Placing order…" : "Place order"}
-        </button>
-    </div>
-  );
-}
-// src/pages/Checkout.tsx
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../app/firebase"; // adjust path if necessary
-export default function CheckoutPage() {
-  const { items, clearCart, getTotal } = useCart();
-  const [address, setAddress] = useState({ line1: "", line2: "", city: "", phone: "" });
-  const validate = () => {
-    if (!address.line1.trim()) return "Address line 1 is required";
-    if (!address.phone.trim()) return "Phone is required";
-    if (items.length === 0) return "Cart is empty";
-    return null;
-  };
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const v = validate();
-    if (v) {
-      setError(v);
-      // NOTE: This example assumes cart items all have same shopId
-      const shopId = items[0]?.shopId ?? "unknown";
-      const order: Order = {
-        customerId: null, // TODO: set user ID if using auth
-        shopId,
-        items,
-        total: getTotal(),
-        address: {
-          line1: address.line1,
-          line2: address.line2 || undefined,
-          city: address.city || undefined,
-          phone: address.phone,
-        },
-      const ordersRef = collection(db, "orders");
-      const docRef = await addDoc(ordersRef, order);
-      // success
-      // navigate to order confirmation
-      navigate(`/order/${docRef.id}`, { replace: true });
-      setError("Failed to place order. " + (err?.message ?? ""));
-      <h2>Checkout</h2>
-      <form onSubmit={onSubmit}>
-        <div>
-          <label>Address line 1</label>
-          <br />
-          <input value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} />
-        </div>
-          <label>Address line 2</label>
-          <input value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} />
-          <label>City</label>
-          <input value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-          <label>Phone</label>
-          <input value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value })} />
-        <div style={{ marginTop: 12 }}>
-          <strong>Total: ₹{getTotal().toFixed(2)}</strong>
-        {error && <div style={{ color: "red", marginTop: 8 }}>{error}</div>}
-          <button type="submit" disabled={loading}>
-            {loading ? "Placing order..." : "Place order"}
-          </button>
-      </form>

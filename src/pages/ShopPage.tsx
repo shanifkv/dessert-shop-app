@@ -51,7 +51,7 @@ const ShopPage: React.FC = () => {
       {items.length === 0 && !loading ? (
         <p>No items found for this shop. Add items in Firestore under shops/{shopId}/items.</p>
       ) : (
-        items.map((it) => <ItemCard key={it.id} item={it} />)
+        items.map((it) => <ItemCard key={it.id} item={it} shopId={shopId} />)
       )}
     </main>
   );

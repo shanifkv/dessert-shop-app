@@ -35,7 +35,7 @@ export default function Cart({ onClose }: Props) {
               <div style={{ fontWeight: 700, marginTop: 8 }}>Your cart is empty</div>
               <div style={{ marginTop: 6, color: "#888" }}>Add delicious desserts from a shop to get started.</div>
               <div style={{ marginTop: 12 }}>
-                <button onClick={onClose || (() => {})}>Continue shopping</button>
+                <button onClick={onClose || (() => { })}>Continue shopping</button>
               </div>
             </div>
           ) : (
@@ -66,7 +66,15 @@ export default function Cart({ onClose }: Props) {
             <div style={{ fontWeight: 800 }}>₹{subtotal.toFixed(2)}</div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button style={{ flex: 1 }} onClick={() => { /* TODO: go to checkout */ }}>Checkout</button>
+            <button
+              style={{ flex: 1 }}
+              onClick={() => {
+                onClose?.(); // Close the cart if onClose is provided
+                window.location.href = "/checkout"; // Navigate to checkout page
+              }}
+            >
+              Checkout
+            </button>
             <button style={{ flex: 1 }} onClick={clearCart}>Clear</button>
           </div>
         </footer>

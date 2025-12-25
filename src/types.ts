@@ -9,6 +9,7 @@ export interface Shop {
   name: string;
   address?: string;
   imageUrl?: string;
+  description?: string;
   createdAt?: number | null;
 }
 
@@ -39,8 +40,9 @@ export interface Order {
   shopId?: string | null;
   items: CartItem[];
   total: number;
-  status: 'placed' | 'processing' | 'delivered' | 'cancelled';
+  status: 'placed' | 'preparing' | 'ready' | 'on_the_way' | 'delivered' | 'cancelled';
   createdAt?: any;
   address?: string;
+  deliveryId?: string | null;
 }
 
