@@ -35,18 +35,11 @@ export default function Checkout() {
     setLoading(true);
     try {
       const total = getTotal();
-      const fullAddress = {
-        name,
-        line1,
-        line2,
-        city,
-        phone
-      };
 
       // SINGLE SOURCE OF TRUTH ORDER DOCUMENT
       const order = {
         customerId: null, // TODO: Auth user ID
-        shopId: items[0]?.shopId ?? "demo-shop", // Fallback for debugging
+        shopId: items[0]?.shopId ?? "demo-shop",
         deliveryId: null,
         items: items.map((it) => ({
           itemId: it.itemId,
@@ -73,9 +66,13 @@ export default function Checkout() {
 
   if (items.length === 0) {
     return (
-      <main className="container" style={{ padding: "40px 20px", textAlign: "center" }}>
-        <h2 style={{ fontSize: "2rem", marginBottom: "20px" }}>Your Cart is Empty</h2>
-        <p style={{ marginBottom: "30px", color: "#666" }}>Looks like you haven't added any treats yet.</p>
+      <main className="container" style={{ padding: "80px 20px", textAlign: "center", maxWidth: 600 }}>
+        <h2 style={{ fontSize: "2.5rem", marginBottom: "20px", fontFamily: "var(--font-serif)", color: "var(--color-primary)" }}>
+          Your Cart is Empty
+        </h2>
+        <p style={{ marginBottom: "30px", color: "#666", fontSize: "1.1rem" }}>
+          Looks like you haven't added any treats yet.
+        </p>
         <button
           className="btn-primary"
           onClick={() => navigate('/customer')}
@@ -87,74 +84,75 @@ export default function Checkout() {
   }
 
   return (
-    <main className="container" style={{ padding: "40px 20px" }}>
-      <h2 style={{ fontSize: "2.5rem", marginBottom: "30px", borderBottom: "1px solid #eee", paddingBottom: "10px" }}>
-        Checkout
-      </h2>
+    <main className="container" style={{ padding: "60px 24px" }}>
+      <h2 className="page-title">Checkout</h2>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "60px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: "60px", alignItems: "start" }}>
         {/* Left Column: Form */}
         <div>
-          <h3 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Shipping Details</h3>
-          <form onSubmit={onPlaceOrder} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Full Name</label>
+          <h3 style={{ fontSize: "1.5rem", marginBottom: "24px", fontFamily: "var(--font-serif)", color: "var(--color-text)" }}>
+            Shipping Details
+          </h3>
+          <form onSubmit={onPlaceOrder}>
+            <div className="form-group">
+              <label className="form-label">Full Name</label>
               <input
+                className="form-input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
                 placeholder="Ex. Jane Doe"
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Phone Number</label>
+            <div className="form-group">
+              <label className="form-label">Phone Number</label>
               <input
+                className="form-input"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
                 placeholder="Ex. 9876543210"
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Address Line 1</label>
+            <div className="form-group">
+              <label className="form-label">Address Line 1</label>
               <input
+                className="form-input"
                 value={line1}
                 onChange={(e) => setLine1(e.target.value)}
-                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
                 placeholder="Street address, flat number"
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>Address Line 2 (Optional)</label>
+            <div className="form-group">
+              <label className="form-label">Address Line 2 (Optional)</label>
               <input
+                className="form-input"
                 value={line2}
                 onChange={(e) => setLine2(e.target.value)}
-                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
                 placeholder="Landmark, etc."
               />
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              <label style={{ fontWeight: 600, fontSize: "0.9rem" }}>City</label>
+            <div className="form-group">
+              <label className="form-label">City</label>
               <input
+                className="form-input"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                style={{ padding: "12px", borderRadius: "4px", border: "1px solid #ddd", fontSize: "1rem" }}
                 placeholder="Ex. Kochi"
               />
             </div>
 
             {error && (
               <div style={{
-                padding: "12px",
-                backgroundColor: "#ffebee",
-                color: "#c62828",
-                borderRadius: "4px",
-                fontSize: "0.9rem"
+                padding: "16px",
+                backgroundColor: "#fff5f5",
+                color: "#e53e3e",
+                borderRadius: "8px",
+                fontSize: "0.95rem",
+                marginBottom: "20px",
+                border: "1px solid #fed7d7"
               }}>
                 {error}
               </div>
@@ -164,7 +162,7 @@ export default function Checkout() {
               type="submit"
               disabled={loading}
               className="btn-primary"
-              style={{ padding: "16px", fontSize: "1.1rem", marginTop: "10px" }}
+              style={{ width: "100%", marginTop: "10px" }}
             >
               {loading ? "Processing Order..." : `Place Order (₹${getTotal().toFixed(2)})`}
             </button>
@@ -172,21 +170,23 @@ export default function Checkout() {
         </div>
 
         {/* Right Column: Order Summary */}
-        <div style={{ backgroundColor: "#f9f9f9", padding: "30px", borderRadius: "8px", height: "fit-content" }}>
-          <h3 style={{ fontSize: "1.5rem", marginBottom: "20px" }}>Order Summary</h3>
+        <div className="checkout-summary-card">
+          <h3 style={{ fontSize: "1.5rem", marginBottom: "24px", fontFamily: "var(--font-serif)", color: "var(--color-primary)" }}>
+            Your Order
+          </h3>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
             {items.map((it) => (
-              <li key={it.itemId} style={{ display: "flex", justifyContent: "space-between", padding: "15px 0", borderBottom: "1px solid #eee" }}>
+              <li key={it.itemId} style={{ display: "flex", justifyContent: "space-between", padding: "16px 0", borderBottom: "1px dashed rgba(0,0,0,0.1)" }}>
                 <div>
-                  <div style={{ fontWeight: 600 }}>{it.name}</div>
-                  <div style={{ fontSize: "0.9rem", color: "#666" }}>Qty: {it.qty}</div>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>{it.name}</div>
+                  <div style={{ fontSize: "0.9rem", color: "var(--color-text-light)" }}>Qty: {it.qty}</div>
                 </div>
-                <div style={{ fontWeight: 600 }}>₹{(it.price * it.qty).toFixed(2)}</div>
+                <div style={{ fontWeight: 700, color: "var(--color-primary)" }}>₹{(it.price * it.qty).toFixed(2)}</div>
               </li>
             ))}
           </ul>
 
-          <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "2px solid #ddd", display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: 700 }}>
+          <div style={{ marginTop: "24px", paddingTop: "24px", borderTop: "2px solid rgba(0,0,0,0.05)", display: "flex", justifyContent: "space-between", fontSize: "1.25rem", fontWeight: 700, fontFamily: "var(--font-serif)" }}>
             <span>Total</span>
             <span style={{ color: "var(--color-primary)" }}>₹{getTotal().toFixed(2)}</span>
           </div>

@@ -8,76 +8,129 @@ type Props = {
 
 export default function Cart({ onClose }: Props) {
   const { items, removeItem, updateQty, clearCart, getTotal, getCount } = useCart();
-
   const subtotal = getTotal();
 
   return (
     <div>
       {/* Backdrop */}
-      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.3)", zIndex: 50 }} onClick={onClose} />
+      <div className="cart-backdrop" onClick={onClose} />
 
       {/* Drawer */}
-      <aside style={{ position: "fixed", right: 0, top: 0, height: "100%", width: 360, background: "#fff", zIndex: 60, boxShadow: "-6px 0 24px rgba(0,0,0,0.12)", display: "flex", flexDirection: "column" }}>
-        <header style={{ padding: 16, borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <aside className="cart-drawer">
+        <header className="cart-header">
           <div>
-            <strong>Your Cart</strong>
-            <div style={{ fontSize: 12, color: "#666" }}>{getCount()} items</div>
+            <h2 className="cart-title">Your Cart</h2>
+            <div style={{ fontSize: 13, color: "var(--color-primary)", marginTop: 4 }}>
+              {getCount()} items
+            </div>
           </div>
-          <div>
-            <button onClick={onClose} aria-label="Close cart">Close</button>
-          </div>
+          <button className="cart-close-btn" onClick={onClose} aria-label="Close cart">
+            &times;
+          </button>
         </header>
 
-        <div style={{ padding: 12, overflowY: "auto", flex: 1 }}>
+        <div className="cart-items">
           {items.length === 0 ? (
-            <div style={{ padding: 32, textAlign: "center", color: "#666" }}>
-              <div style={{ fontSize: 48, lineHeight: 1 }}>🧾</div>
-              <div style={{ fontWeight: 700, marginTop: 8 }}>Your cart is empty</div>
-              <div style={{ marginTop: 6, color: "#888" }}>Add delicious desserts from a shop to get started.</div>
-              <div style={{ marginTop: 12 }}>
-                <button onClick={onClose || (() => { })}>Continue shopping</button>
+            <div className="cart-empty-state">
+              <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 16 }}>🧾</div>
+              <div style={{ fontWeight: 700, fontSize: "1.2rem", marginBottom: 8, color: "var(--color-primary)" }}>
+                Your cart is empty
               </div>
+              <p>Add delicious desserts from a shop to get started.</p>
+              <button
+                className="btn-primary"
+                style={{ marginTop: 24 }}
+                onClick={onClose}
+              >
+                Continue shopping
+              </button>
             </div>
           ) : (
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               {items.map((it) => (
-                <li key={it.itemId} style={{ display: "flex", gap: 12, alignItems: "center", padding: "8px 0", borderBottom: "1px solid #f1f1f1" }}>
-                  <img src={it.imageUrl ?? getPlaceholderImage(it.name, 144, 112)} alt={it.name} width={72} height={56} style={{ objectFit: "cover", borderRadius: 6 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700 }}>{it.name}</div>
-                    <div style={{ color: "#666", fontSize: 13 }}>₹{it.price.toFixed(2)}</div>
-                    <div style={{ marginTop: 8 }}>
-                      <button onClick={() => updateQty(it.itemId, it.qty - 1)} disabled={it.qty <= 1} aria-label="Decrease quantity">-</button>
-                      <span style={{ margin: "0 8px" }}>{it.qty}</span>
-                      <button onClick={() => updateQty(it.itemId, it.qty + 1)}>+</button>
-                      <button style={{ marginLeft: 12 }} onClick={() => removeItem(it.itemId)}>Remove</button>
+                <div key={it.itemId} className="cart-item">
+                  <img
+                    src={it.imageUrl ?? getPlaceholderImage(it.name, 144, 112)}
+                    alt={it.name}
+                    className="cart-item-image"
+                  />
+                  <div className="cart-item-details">
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                      <div className="cart-item-name">{it.name}</div>
+                      <div className="cart-item-price">₹{(it.price * it.qty).toFixed(2)}</div>
+                    </div>
+
+                    <div style={{ color: "#888", fontSize: "0.9rem" }}>
+                      ₹{it.price.toFixed(2)} each
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                      <div className="cart-qty-controls">
+                        <button
+                          className="qty-btn"
+                          onClick={() => updateQty(it.itemId, it.qty - 1)}
+                          disabled={it.qty <= 1}
+                          aria-label="Decrease quantity"
+                        >
+                          -
+                        </button>
+                        <span style={{ fontWeight: 700, minWidth: 20, textAlign: "center" }}>{it.qty}</span>
+                        <button
+                          className="qty-btn"
+                          onClick={() => updateQty(it.itemId, it.qty + 1)}
+                          aria-label="Increase quantity"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <button className="cart-remove-btn" onClick={() => removeItem(it.itemId)}>
+                        Remove
+                      </button>
                     </div>
                   </div>
-                  <div style={{ fontWeight: 700 }}>₹{(it.price * it.qty).toFixed(2)}</div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
         </div>
 
-        <footer style={{ padding: 16, borderTop: "1px solid #eee" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <div style={{ color: "#666" }}>Subtotal</div>
-            <div style={{ fontWeight: 800 }}>₹{subtotal.toFixed(2)}</div>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              style={{ flex: 1 }}
-              onClick={() => {
-                onClose?.(); // Close the cart if onClose is provided
-                window.location.href = "/checkout"; // Navigate to checkout page
-              }}
-            >
-              Checkout
-            </button>
-            <button style={{ flex: 1 }} onClick={clearCart}>Clear</button>
-          </div>
-        </footer>
+        {items.length > 0 && (
+          <footer className="cart-footer">
+            <div className="cart-summary-row">
+              <span>Subtotal</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </div>
+            <div className="cart-summary-row">
+              <span>Delivery Fee</span>
+              <span>₹40.00</span>
+            </div>
+            <div className="cart-total-row">
+              <span>Total</span>
+              <span>₹{(subtotal + 40).toFixed(2)}</span>
+            </div>
+
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                className="btn-secondary"
+                onClick={clearCart}
+                style={{ flex: 1, padding: "12px" }}
+              >
+                Clear
+              </button>
+              <button
+                className="btn-primary"
+                style={{ flex: 2 }}
+                onClick={() => {
+                  onClose?.();
+                  window.location.href = "/checkout";
+                }}
+              >
+                Checkout Now
+              </button>
+            </div>
+          </footer>
+        )}
       </aside>
     </div>
   );

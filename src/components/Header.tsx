@@ -13,6 +13,8 @@ const Header: React.FC = () => {
   const { user, signInAs, signOut } = useAuth();
   const { showCart, openCart, closeCart, getCount } = useCart();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+
   return (
     <>
       <header style={{
@@ -28,7 +30,7 @@ const Header: React.FC = () => {
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
 
           {/* Logo */}
-          <Link to="/" style={{ textDecoration: "none" }}>
+          <Link to="/" style={{ textDecoration: "none", zIndex: 102 }}>
             <h1 style={{
               margin: 0,
               fontSize: "1.75rem",
@@ -41,14 +43,14 @@ const Header: React.FC = () => {
             </h1>
           </Link>
 
-          {/* Navigation */}
-          <div style={{ display: "flex", gap: "32px", alignItems: "center" }}>
-            <Link to="/customer" style={{ textDecoration: "none", color: "var(--color-text)", fontWeight: 500, fontSize: "0.95rem" }}>Customer</Link>
-            <Link to="/my-orders" style={{ textDecoration: "none", color: "var(--color-text)", fontWeight: 500, fontSize: "0.95rem" }}>My Orders</Link>
-            <Link to="/shop" style={{ textDecoration: "none", color: "var(--color-text)", fontWeight: 500, fontSize: "0.95rem" }}>Shop</Link>
+          {/* Desktop Navigation */}
+          <div className="hide-on-mobile" style={{ display: "flex", gap: "32px", alignItems: "center" }}>
+            <Link to="/customer" style={{ fontSize: "0.95rem", fontWeight: 500, color: "var(--color-text)" }}>Customer</Link>
+            <Link to="/my-orders" style={{ fontSize: "0.95rem", fontWeight: 500, color: "var(--color-text)" }}>My Orders</Link>
+            <Link to="/shop" style={{ fontSize: "0.95rem", fontWeight: 500, color: "var(--color-text)" }}>Shop</Link>
           </div>
 
-          <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+          <div className="hide-on-mobile" style={{ display: "flex", gap: "15px", alignItems: "center" }}>
             {/* Cart Button */}
             <button
               onClick={() => showCart ? closeCart() : openCart()}
@@ -85,7 +87,7 @@ const Header: React.FC = () => {
               {user ? (
                 <>
                   <strong style={{ color: "var(--color-primary)" }}>{user.role}</strong>
-                  <button onClick={signOut} style={{ background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "#666" }}>(Sign Out)</button>
+                  <button onClick={signOut} style={{ background: "none", border: "none", textDecoration: "underline", cursor: "pointer", color: "#666", padding: 0 }}>(Sign Out)</button>
                 </>
               ) : (
                 <>
@@ -96,7 +98,74 @@ const Header: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <div className="show-on-mobile" style={{ zIndex: 102 }}>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "var(--color-text)" }}
+            >
+              {mobileMenuOpen ? "✕" : "☰"}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Navigation Dropdown */}
+        {mobileMenuOpen && (
+          <div className="show-on-mobile" style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100vh",
+            background: "white",
+            zIndex: 101, // Below logo/toggle but above everything else
+            padding: "80px 24px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "24px"
+          }}>
+            <nav style={{ display: "flex", flexDirection: "column", gap: "16px", fontSize: "1.2rem", fontWeight: 700 }}>
+              <Link to="/customer" onClick={() => setMobileMenuOpen(false)}>Customer</Link>
+              <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)}>My Orders</Link>
+              <Link to="/shop" onClick={() => setMobileMenuOpen(false)}>Shop Dashboard</Link>
+            </nav>
+
+            <hr style={{ border: "0", borderTop: "1px solid #eee", width: "100%" }} />
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "1.1rem", fontWeight: 700 }}>Your Cart</span>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openCart();
+                }}
+                className="btn-primary"
+                style={{ padding: "8px 24px" }}
+              >
+                View Cart ({getCount()})
+              </button>
+            </div>
+
+            <hr style={{ border: "0", borderTop: "1px solid #eee", width: "100%" }} />
+
+            <div style={{ marginTop: "auto" }}>
+              <p style={{ color: "var(--color-text-light)", marginBottom: "12px" }}>Account</p>
+              {user ? (
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <strong>{user.role}</strong>
+                  <button onClick={() => { signOut(); setMobileMenuOpen(false); }} className="btn-secondary" style={{ fontSize: "0.8rem", padding: "6px 12px" }}>Sign Out</button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <button onClick={() => { signInAs("customer"); setMobileMenuOpen(false); }} className="btn-secondary" style={{ flex: 1 }}>Customer</button>
+                  <button onClick={() => { signInAs("shop"); setMobileMenuOpen(false); }} className="btn-secondary" style={{ flex: 1 }}>Shop</button>
+                  <button onClick={() => { signInAs("delivery"); setMobileMenuOpen(false); }} className="btn-secondary" style={{ flex: 1 }}>Delivery</button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {showCart && <Cart onClose={closeCart} />}

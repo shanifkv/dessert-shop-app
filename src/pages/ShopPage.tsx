@@ -51,7 +51,18 @@ const ShopPage: React.FC = () => {
       {items.length === 0 && !loading ? (
         <p>No items found for this shop. Add items in Firestore under shops/{shopId}/items.</p>
       ) : (
-        items.map((it) => <ItemCard key={it.id} item={it} shopId={shopId} />)
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: "24px",
+          marginTop: "24px"
+        }}>
+          {items.map((it, i) => (
+            <div key={it.id} className={`animate-slide-up stagger-${(i % 10) + 1}`}>
+              <ItemCard item={it} shopId={shopId} />
+            </div>
+          ))}
+        </div>
       )}
     </main>
   );

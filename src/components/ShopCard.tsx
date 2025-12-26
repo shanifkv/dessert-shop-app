@@ -1,7 +1,3 @@
-/**
- * src/components/ShopCard.tsx
- * Small card to display a Shop and navigate to its shop page.
- */
 import React from "react";
 import { Shop } from "../types";
 import { useNavigate } from "react-router-dom";
@@ -16,60 +12,52 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
 
   return (
     <article
-      className="card"
-      style={{
-        cursor: "pointer",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column"
-      }}
+      className="shop-card"
       onClick={() => navigate(`/shop/${shop.id}`)}
+      style={{ cursor: "pointer" }}
     >
-      <div style={{ height: "200px", overflow: "hidden" }}>
+      <div className="shop-card-image-container">
         {shop.imageUrl ? (
           <img
             src={shop.imageUrl}
             alt={shop.name}
+            className="shop-card-image"
             onError={(e) => {
-              e.currentTarget.onerror = null; // prevent infinite loop
-              e.currentTarget.src = getPlaceholderImage(shop.name || "dessert", 400, 250);
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = getPlaceholderImage(shop.name || "dessert", 600, 400);
             }}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
-          <img src={getPlaceholderImage(shop.name || "cafe", 400, 250)} alt={shop.name}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img
+            src={getPlaceholderImage(shop.name || "cafe", 600, 400)}
+            alt={shop.name}
+            className="shop-card-image"
+          />
         )}
+
+        <div className="badge-open">
+          OPEN NOW
+        </div>
       </div>
 
-      <div style={{ padding: "20px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <h3 style={{ margin: "0 0 10px 0", fontSize: "1.25rem", color: "var(--color-primary)" }}>
+      <div className="shop-card-content">
+        <h3 className="shop-card-title">
           {shop.name}
         </h3>
-        <p style={{ margin: "0 0 20px 0", color: "#666", fontSize: "0.95rem", flex: 1 }}>
-          {shop.address ?? shop.description ?? "Authentic desserts made with love."}
+        <p className="shop-card-info">
+          {shop.address ?? shop.description ?? "Experience the finest handcrafted desserts."}
         </p>
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{
-            background: "rgba(0,0,0,0.05)",
-            color: "var(--color-text-light)",
-            padding: "4px 12px",
-            borderRadius: "50px",
-            fontSize: "0.85rem",
-            fontWeight: 500
-          }}>
-            Closed • Opens 9am
-          </span>
-          <button style={{
-            background: "none",
-            border: "none",
-            color: "var(--color-primary)",
-            fontWeight: "bold",
-            cursor: "pointer",
-            padding: 0
-          }}>
-            Visit Shop →
+        <div className="shop-card-footer">
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+            {[1, 2, 3, 4, 5].map(i => (
+              <span key={i} style={{ color: i <= 4 ? "var(--color-accent)" : "#e0e0e0", fontSize: "0.9rem" }}>★</span>
+            ))}
+            <span style={{ fontSize: "0.85rem", color: "#999", marginLeft: 6 }}>(4.2)</span>
+          </div>
+
+          <button className="shop-visit-btn">
+            Visit Boutique <span>→</span>
           </button>
         </div>
       </div>
