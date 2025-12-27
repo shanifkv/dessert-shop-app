@@ -6,9 +6,11 @@ import {
   where,
   doc,
   updateDoc,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "../app/firebase";
 import AddItemForm from "../components/AddItemForm";
+import ShopProfileForm from "../components/ShopProfileForm";
 import { useAuth } from "../context/AuthContext";
 
 type OrderRecord = {
@@ -24,10 +26,21 @@ const ShopHome: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [shopExists, setShopExists] = useState<boolean | null>(null);
   const { user } = useAuth();
 
   // Use the authenticated user's ID as the shop ID
   const currentShopId = user?.uid;
+
+  // Check if shop profile exists
+  useEffect(() => {
+    if (currentShopId) {
+      getDoc(doc(db, "shops", currentShopId)).then((snap) => {
+        setShopExists(snap.exists());
+      });
+    }
+  }, [currentShopId]);
 
   // 🔹 Listen to orders in real-time
   useEffect(() => {
@@ -86,8 +99,41 @@ const ShopHome: React.FC = () => {
     <main className="container" style={{ padding: "40px 24px" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32 }}>
         <h2 className="page-title" style={{ marginBottom: 0 }}>Shop Dashboard</h2>
-        <div style={{ color: "var(--color-text-light)" }}>Shop ID: {currentShopId}</div>
+        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <div style={{ color: "var(--color-text-light)" }}>Shop ID: {currentShopId}</div>
+          <button
+            className="btn-secondary"
+            onClick={() => setShowProfile(!showProfile)}
+          >
+            {showProfile ? "Close Settings" : "Edit Shop Profile"}
+          </button>
+        </div>
       </div>
+
+      {/* 🔹 SHOP PROFILE SECTION */}
+      {currentShopId && (showProfile || (shopExists === false && !loading)) && (
+        <section style={{ marginBottom: 48 }}>
+          {!shopExists && !loading && (
+            <div style={{
+              padding: "16px",
+              background: "#fff7ed",
+              borderLeft: "4px solid #f97316",
+              marginBottom: "16px",
+              borderRadius: "4px",
+              color: "#9a3412"
+            }}>
+              <strong>Action Required:</strong> Please create your shop profile to be visible to customers.
+            </div>
+          )}
+          <ShopProfileForm
+            shopId={currentShopId}
+            onProfileSaved={() => {
+              setShopExists(true);
+              setShowProfile(false);
+            }}
+          />
+        </section>
+      )}
 
       <section style={{ marginBottom: 48 }}>
         <h3 style={{ fontSize: "1.5rem", marginBottom: "24px", fontFamily: "var(--font-serif)", color: "var(--color-primary)" }}>
@@ -231,7 +277,7 @@ const ShopHome: React.FC = () => {
           Add New Item
         </h3>
         <div className="card" style={{ padding: 32 }}>
-          <AddItemForm shopId={currentShopId} />
+          {currentShopId && <AddItemForm shopId={currentShopId} />}
         </div>
       </section>
     </main>

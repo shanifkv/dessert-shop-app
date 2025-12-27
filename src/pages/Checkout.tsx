@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../app/firebase";
 import { useNavigate } from "react-router-dom";
 
 export default function Checkout() {
   const { items, getTotal, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -21,6 +23,7 @@ export default function Checkout() {
     if (!name.trim()) return "Name is required.";
     if (!line1.trim()) return "Address is required.";
     if (!phone.trim()) return "Phone is required.";
+    if (!user) return "You must be logged in to place an order.";
     return null;
   };
 
@@ -38,7 +41,7 @@ export default function Checkout() {
 
       // SINGLE SOURCE OF TRUTH ORDER DOCUMENT
       const order = {
-        customerId: null, // TODO: Auth user ID
+        customerId: user?.uid, // Authenticated User ID
         shopId: items[0]?.shopId ?? "demo-shop",
         deliveryId: null,
         items: items.map((it) => ({
